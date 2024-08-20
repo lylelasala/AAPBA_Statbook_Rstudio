@@ -1,0 +1,413 @@
+---
+title: "AAPBA Winter 2024 Statbook Rstudio Analysis"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+install.packages("tidyverse")
+library("tidyverse")
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+###aapba stats into a database so that it's easier for players to compare stats instead of a messy disorganized facebook - Longterm goal ###
+
+# *I've had the biggest mental block of my life, why did clearing my phone from old photos do the trick, and why did a wedding of an old friend wake me up to reality.* 
+#	- 7/29/24
+
+# Go allow the way 
+#	. Transfer the statbooks, organize them, sort them by date
+#	. Use copilot to try to transfer the stats to a database
+#	. Now that I used copilot to organize my train of thought implement action
+#	. Career coach said to use Tableau for this project, I'll transfer over the excel file to the tableau workspace
+#	. Practice Tableau along the way
+#	. Before I start I'm going to write my hypothesis now. Here's the template:
+#	- Before you start, I want you to write out a hypothesis about the data, even if you have no clue what the data means. 
+#	- You may also add hypotheses as you go and test them - often you will have many, many questions about your data that you'll want to answer. 
+#	- Then, you'll be using R and Python to analyze whatever data you find. 
+#	- I recommend going through the entire process with one language and then trying it with the other. 
+#	- Googling things is totally encouraged if you need to find specific tools for Python or R, particularly if there are specific tools from the tidyverse to help out; this won't be needed for every project. 
+#	- This project is intentionally open-ended, as an important part of data analysis is knowing your data.  
+
+#	. Hypotheses: For the statbooks I'm analyzing I'm going to predict shot selection. 
+	
+# 1	- There is going to be a wide margin between the amount of 3 pointers made between the older generation (G-League - Masters 1 + 2 - Open-Mix/OP1) and younger generation (OP2 - OP4). The younger gen is going to have a higher percentage % of 3s taken compared to the older gen.  = young guns are better shooters. X
+#	* Determinent of age: older gen 50> with exception of OP1 having players be 50<, newer gen 50<
+# - Older Gen had a better 3PM % with 61% > 51%, but wasn't necessarily a wide margin.
+#No
+
+# 2	- I'm also going to predict that there will be more assists by the older gen compared to the younger gen = old heads are more giving.
+#The older generation had more assist than the younger generation     829 > 631
+#Yes
+	
+# 3 Free throws made (FTM) percentage is going to be higher for the younger gen compared to the older gen = ice in veins mentality for young guns
+# 81% vs 62% was the percentage difference between the younger generation compared to the older generation. This percentile did have a wide difference compared to 3PM
+```
+
+```{r}
+#Formulas used:
+# For excel SUM:(X#:X#) was used through out the statisical process of adding the total for points, rebounds, assists, steals, blocks, total shots made, total 3 points made etc.
+# Will create vectors and graphs along the way 
+```
+
+
+```{r}
+# Hypothesis 1 
+
+# There is going to be a wide margin between the amount of 3 pointers made between the older generation (G-League - Masters 1 and 2) and younger generation (OP1 - OP4). The younger gen is going to have a higher percentage % of 3s taken compared to the older gen.  = young guns are better shooters
+
+# For this first part of the analysis I have uploaded the stats from the excel files to my r studio. For each sheet I will analyse the 3pt% for each team and average the point total up separating the older gen division vs the newer gen division. I will use R tools to figure out the analysis and then throw in some data visualizations.
+
+# Conclusion: "Old Heads" have a higher 3PM percentage total with 61% being higher than the 3PM percentage total of the "young guns" with 51%. 61% > 51%, being 10% higher, mind that the Masters Division had more games so numbers may have been a bit skewed, however shot selection overall the older generation has a better 3 point shot margin compared to the younger generation with this analysis.  
+```
+
+
+```{r}
+# Older Gen #
+## G-League/All-Asian 3PM
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet1")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+#Total Entries from 11/5/23 - 1/7/24 
+#3PM: 
+6 + 8 + 4 + 1 + 11 + 3 + 5 + 10 + 11 + 5
+```
+
+```{r}
+## Masters 1 + 2 3PM 
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet2")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+#Total Entries from 11/5/24 - 2/18/24
+#3PM:
+6 + 2 + 7 +  10 + 5 + 7 + 6 + 3 + 5 + 4 + 6 + 7 + 3 + 5 + 0 + 0 + 0 + 0 + 0 + 0 + 6 + 6 + 1 + 4 + 4 + 7 + 13 + 8 + 3 +3 + 8 + 10 + 4 + 14 +6 +14 + 10 + 3 + 5 +11 + 3 + 6 + 11 + 6 + 2 + 5 +5 + 3 + 6 +6 + 6 + 5 +3 + 10 + 11 + 10 + 0 + 4 + 7+ 5 +7 + 6 + 7 + 8 + 2 + 0 + 0 + 9 + 6 + 4 + 8 + 0 + 0 + 5 + 5 +9 + 15 + 5 + 10 + 9 + 8 + 5+ 2 + 7 + 2 + 4 + 6 
+```
+
+
+```{r}
+## Open Mix/OP1
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet3")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Entries from 11/5/24 - 2/18/24
+#3PM: 
+3 + 5 + 8 + 9 + 4 + 3 + 3 + 1 + + 0 + 0 + + 9 + 11 + 6 + 13 + 5 + 12 + 3 + 3 + 0 + 0 + 8 + 13 + 16 + 12 + 9 + 11 + 11 + 8 + 6 + 5 + 4 + 8
+```
+```{r}
+# 61% 3PM average for "Old Head" total
+64 + 479 + 209 / 3
+612.7 / 1000 
+0.6127 * 100
+# 61% 3PM average for "Old Head" total 
+```
+```{r}
+older_divisions <- c("G-League", "Masters 1 and 2", "Open Mix/OP1")
+threes_made_total <- c(64, 479, 209)
+```
+
+```{r}
+older_threes_made_total <- data.frame(older_divisions, threes_made_total)
+```
+
+```{r}
+print(older_threes_made_total)
+```
+
+```{r}
+plot(older_threes_made_total)
+```
+
+```{r}
+# Younger Gen #
+## OP2
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet4")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Entries from 1/7/24 - 2/25/24
+#3PM:
+13 + 9 + 1 + 0 + 0 + 0 + 0 + 0 + 7 + 9 + 8 + 7 + 4 + 11 + 6 + 5 + 0 + 0 + 10 + 3 + 4 + 11 
+```
+
+```{r}
+## OP3
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet5")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Entries from 1/7/24 - 2/25/24
+5 + 5 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 1 + 11 + 12 + 10 + 5 + 10 + 6 + 2 + 2 + 2 + 7 + 12 + 6 +4 + 9 + 9 + 9 + 12 + 11 + 6 + 8 + 3 + 6 + 10 + 14 + 8 + 7 + 0  
+```
+
+```{r}
+## OP4
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", sheet = "Sheet6")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Entries from 1/14/24 - 2/25/24 
+8 + 3 + 9 + 5 + 4 + 6 + 15 + 4 + 5 + 6 + 2 + 1 + 7 + 5 + 6 + 1 + 13 + 9 + 2 + 7 + 5 + 4 + 11 + 10 + + 6 + 14 + 18 + 8 
+```
+
+```{r}
+#51% is the "young gun" 3PM percentage total
+108 + 212 + 194
+514 / 1000
+0.514 * 100
+#51% is the "young gun" 3PM percentage total
+```
+```{r}
+younger_divisions <- c("OP2", "OP3", "OP4")
+threes_made_total <- c(108, 212, 194)
+```
+
+```{r}
+younger_threes_made_total <- data.frame(younger_divisions, threes_made_total)
+```
+
+```{r}
+print(younger_threes_made_total)
+```
+
+
+```{r}
+# Hypothesis 2 
+#2	- I'm also going to predict that there will be more assists by the older gen compared to the younger gen = old heads are more giving
+
+#Conclusion: The "Old Heads" Assist data shows that they had more assist with 829 assists total this season compared to the "young guns" with 631 assist total. This tells me that the older generation plays a more team centric style of basketball compared to a more single scoring centered approach with the younger generation in this particular amateur rec league. 
+```
+
+```{r}
+## G-League/All-Asian 3PM
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet1")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Entries of Team total assist 11/5/23 - 1/7/24
+2 + 5 + 7 + 0 + 1 + 2 + 4 + 5 + 1 + 16 
+```
+
+```{r}
+
+```
+
+```{r}
+## Masters 1 and 2 
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet2")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Entries of Team Total Assists 11/5/23 - 2/18/24 
+3 + 0 + 3 + 3 + 3 + 7 + 5 + 3 + 3 + 9 + 3 + 1 + 3 + 3 + 4 + 3 + 5 + 4 + 0 + 0 + 0 + 1 + 2 + 3 + 1 + 3 + 0 + 1 + 2 + 6 + 0 + 5 + 3 + 2 + 7 + 5 + 6 + 20 + 4 + 12 + 13 + 13 + 4 + 13 +12 + 3 + 4 + 9 + 12 + 3 + 8 + 6 + 6 + 8 + 12 + 4 + 3 + 16 + 6 + 4 + 8 + 6 + 7 + 2 + 5 + 0 + 5 + 13 + 11 + 5 + 16 + 11 + 9 + 8 + 14 + 12 + 22 + 13 + 7 + 14 + 6 + 5 + 8 + 3 + 10   
+```
+
+
+```{r}
+## Open Mix/ OP1
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet3")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+
+```{r}
+#Total Entries of Team Total Assists 11/5/23 - 2/18/24
+3 + 12 + 3 + 6 + 2 + 21 + 1 + 1 + 0 + 0 + 7 + 9 + 7 + 15 + 8 + + 9 + 7 + 7 + 11 + 5 + 14 + 14 + 9 + 14 + 24 + 5 + 13 + 4 + 19 + 9 
+```
+
+```{r}
+# "Old Heads" Total Assist Accumulated 
+43 + 527 + 259
+```
+
+```{r}
+## OP2
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet4")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Team Assists 1/7/24 - 2/25/24
+5 + 11 + 12 + 13 + 0 + 0 + + 0 + 4 + 3 +4 + 2 + 7 + 7 + 11 + 3 + 0 + 0 + 10 + 4 + 6 + 10 
+```
+
+```{r}
+
+```
+
+```{r}
+## OP3
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet5")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Team Assists 1/7/24 - 2/18/24 
+4 + 0 + 3 + 16 + 9 + 2 + 0 + 0 + 0 + 0 + 8+ 8 + 5 + 4 + 12 + 12 + 3 + 10 + 5 + 2+ 11 + 10 + 5 + 9 + 4 + 21 + 20 + 12 + 23 + 12 + 12 + 5 + 15 + 10 + 14 + 19 + 0 + 0 
+```
+
+
+```{r}
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet5")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx) 
+```
+
+
+```{r}
+#Total Team Assists 1/14/24 - 2/25/24
+6 + 2 + 9 + 15 + 4 + 16 + 11 + 5 + 0 + 0 + 5 + 10 + 2 + 2 + 3 + 0 + 4 + 11 + 8 + 3 + 5 + 7 + 15 + 5 + 14 + 11 + 7 + 22 + 10 + 2
+```
+
+```{r}
+#"Young Gun" Total Assist Accumulated
+112 + 305 + 214
+```
+
+
+```{r}
+# Hypothesis 3 
+# 3 Free throws made (FTM) percentage is going to be higher for the younger gen compared to the older gen = ice in veins mentality for young guns, meaning in crunch time the the younger generation will have a higher percentage total in free throws compared to the older generation because of multiple/if one clutchness, consistency, game point difference, etc
+
+# Conclusion: The younger generation (OP2 - OP4) did in fact have a higher percentage total in free throws made (FTM) with a percentage of 81% (80.8 rounded up), meaning that out of 10 free throws 8 are made on average. FOr the older generation only 62% (61.5%) was the percentage for FTM, meaning only about 6 free throws are made out of 10 when shot on average. 
+```
+
+```{r}
+#G-League/ All Asian
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet1")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx) 
+```
+
+```{r}
+# Free Throws Made (FTM): 
+12 + 8 + 6 + 1 + 6 + 4 + 6 + 4 + 3 + 8 
+```
+
+
+```{r}
+# Masters 1 and 2 
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet2")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Free Throws Made (FTM)
+5 + 1 + 3 + 6 + 4 + 5 + 17 + 9 + 7 + 12 + 11 + 4 + 11 + 10 + 3 + 2 + 1 + 1 + 0 + 0 + 2 + 3 + 1 + 3 + 2 + 5 + 5 + 12 + 1 + 5 + 1 + 7 + 6 + 4 + 2 + 2 + 4 + 13 + 0 + 1 + 3 + 9 + 4 + 5 + 2 + 3 + 4 + 0 + 9 + 3 + 7 + 5 + 2 + 5 + 4 + 0  + 0 + + 11 + 18 + 5 + 17 + 3 + 13 + 5 + 9 + 0 + 0 + 0 + 0 + 0 + 3 + 6 + 13 + 1 + 3 + 9 + 2 + 2 + 4 + 5 + 13 + 5 + 1 + 11 + 3 + 11 + 2 + 3 + 5 
+```
+
+
+```{r}
+# Open Mix/ OP1
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet3")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Free Throws Made (FTM)
+3 + 2 + 4 + 4 + 1 + 0 + 2 + 2 + 0 + 0 + 13 + 2 + 2 + 4 + 3 + 10 + 9 + 3 + 0 + 0 + 10 + 5 + 3 + 3 + 6 + 7+ 4 + 2 + 1 + 6 + 7 
+```
+
+
+```{r}
+#"Old Head" FTM Percentage
+58 + 439 + 118 
+615 / 1000
+0.615 * 100
+```
+
+```{r}
+# OP2 
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet4")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# OP2
+# Total Free Throws made (FTM)
+19 + 7 + 6 + 0 + 0 + 0 + 0 + 0 + 5 + 10 + 1 + 7 + 4 + 11 + 16 + 14 + 15 + 8 + 15 + 9
+```
+
+
+```{r}
+# OP3
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet4")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# Total Free Throws Made (FTM)
+12 + 7 + 2 + 0 + 5 + 3 + 0 + 0 + 0 + 0 + 2 + 1 + 5 + 2 + 2 + 11 + 11 + 7 + 5 + 4 + 10 + 6 + 8 + 21 + 9 + 2 + 4 + 9 + 3 + 4 + 14 + 5 + 6 + 3 + 4 + 6 + 10 + 0 
+```
+
+```{r}
+# OP4 
+library(readxl)
+AAPBA_Winter_2024_Statbooks_1_xlsx <- read_excel("AAPBA_Winter_2024_Statbooks_1.xlsx.xlsx", 
+    sheet = "Sheet4")
+View(AAPBA_Winter_2024_Statbooks_1_xlsx)
+```
+
+```{r}
+# OP4 
+# Total Free Throws Made (FTM)
+5 + 6 + 1 + 2 + 5 + 11 + 6 + 12 + 0 + 0 + 12 + 8 + 6 + 10 + 9 + 6 + 4 + 9 + 6 + 5 + 2 + 0 + 5 + 0 + 10 + 5 + 10 + 3 + 2 + 4 
+
+```
+
+```{r}
+# "Young Guns" FTM
+441 + 203 + 164 
+808 / 1000
+0.808 * 100
+```
+
